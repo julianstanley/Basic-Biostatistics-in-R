@@ -1,0 +1,42 @@
+---
+title: "Assignment NUMBER"
+author: "List All Group Members Here"
+
+output: html_document
+---
+
+Instructions
+------------
+
+Please follow the instructions below to complete your assignment:
+
+1. Open the R markdown template **biostatistics-assignmentTemplate.Rmd** in RStudio
+2. Insert the relevant information (i.e., assignment number, names of all students in the group)
+3. Save the file as **assnNUMBER-yourLastNames.Rmd** replacing **NUMBER** with the assignment \# and replacing **yourLastNames** with the last names of all individuals in the Group. For example **assn1-SmithJohnson.Rmd**
+4. Your answers should consist of the R code used to generate the results and their interpretation
+5. Do not use any special symbols such as \%, \#, \$, and \& in your answers
+6. Generate an HTML version of the Markdown document by clicking on the **Knit** icon in RStudio
+7. ONE PERSON in the group: Email an HTML and Markdown version of your completed assignment to your TA
+8. ONE PERSON in the group: Upload the Markdown version of your completed assignment to Turnitin on Blackboard. (Failure to complete this will result in a 10% deduction off your grade.)
+
+### Statement of Author contributions
+Please list all questions here and and the specific contribution of the author(s) to answering the question.
+
+Problem 1
+---------
+### Question 1
+
+```{r}
+pisco <- read.csv(file = "http://faraway.neu.edu/data/pisco_env.csv")
+plot(pisco$latitude, pisco$sst, xlab="Latitude", ylab="Sea Surface Temperature (C)")
+```
+
+There appears to be a clear latitudinal trend in Sea Surface Temperature along the West Coast of the US, with temperature decreasing with latitude.
+
+### Question 2
+
+```{r}
+plot(pisco$latitude, pisco$chla, xlab="Latitude", ylab="[chl-a]")
+```
+
+There appears to be a clear latitudinal trend in primary production ([chl-a]) along the West Coast of the US, with chl-a increasing with latitude.

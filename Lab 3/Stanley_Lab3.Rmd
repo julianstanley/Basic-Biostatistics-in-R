@@ -1,0 +1,204 @@
+---
+title: "Lab #3"
+author: "Julian Stanley"
+date: "23 February 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# This is where you set global options (leave as-is)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+### Introductory Material
+
+```{r}
+my.vars <- data.frame(a1 = 1:10, a2 = 11:20, b1 = 21:30, b2 = 31:40)
+my.means <- sapply(my.vars, FUN = mean)
+my.means
+
+# Get the mean of the first and third columns
+my.first.means <- sapply(my.vars[,c(1,3)], FUN = mean)
+my.first.means
+
+my.mat <- cbind(my.means[c(1,3)], my.means[c(2,4)])
+my.mat
+
+barplot(my.mat,beside = TRUE, names.arg = c("a1", "b1", "a2", "b2"))
+```
+
+
+### Exercise 1
+
+```{r}
+my.mat2 <- cbind(my.means[c(1,2)], my.means[c(3,4)])
+my.mat2
+
+# Function that computes 95 percent confidence intervals
+conf95 <- function(x) {
+  return(1.96*(sd(x) / sqrt(length(x))))
+}
+
+# upper conf interval
+my.conf_upper = my.means + sapply(my.vars, FUN = conf95)
+my.conf_lower = my.means - sapply(my.vars, FUN = conf95)
+
+bar1 <- barplot(my.mat2,beside = TRUE, names.arg = c("a1", "a2", "b1", "b2"), ylim = c(0,40))
+arrows(x0 = bar1, y0 = my.conf_lower , x1 = bar1, y1 = my.conf_upper, angle = 90, code = 3)
+
+my.conf_upper
+```
+
+
+
+```{r}
+my.sums <- colSums(my.vars)
+```
+
+
+```{r}
+# Create some data
+my.table <- cbind(c(5, 21), c(65, 56))
+my.table
+f.test <- fisher.test(my.table)
+f.test
+
+# Extract the p-value
+f.test$p.value
+```
+
+
+
+Task 1
+------------
+
+### Problem 1
+Setup: Fields with alternating GMO and non-GMO plants. Blind: neither the researcher running the experiment nor the person planting the seeds know which seeds are GMO and which are non-GMO.
+
+Controls: Need a positive control. I would also plant some seeds with a known-low gemination rate and a known-high germination rate as positive and negative controls. 
+
+Replication: Use multiple fields and as many seeds as possible
+
+### Problem 2
+```{r}
+d1 <- read.csv("http://faraway.neu.edu/data/lab3_dataset1.csv")
+```
+
+
+
+
+### Problem 3
+```{r}
+colnames(d1)
+
+# Seeds germinated vs seeds that failed to germinate in GMO and wild type
+
+seed.means <- sapply(d1[2:5], FUN = sum)
+seed.means
+
+seeds.conf.lower <- seed.means - sapply(d1[2:5], FUN = conf95)
+
+seeds.conf.upper <- seed.means +  sapply(d1[2:5], FUN = conf95)
+```
+
+
+### Problem 4
+```{r}
+seedsBar <- barplot(seed.means, names.arg = c("GMO Germ", "Wild Germ", "GMO NoGerm", "Wild NoGerm"), beside = FALSE, ylim = c(0,1000))
+arrows(x0 = seedsBar, y0 = seeds.conf.lower , x1 = seedsBar, y1 = seeds.conf.upper, angle = 90, code = 3)
+```
+
+
+### Problem 5
+It looks fantastic! GMO plants are germinating a lot more than wild plants, meethinks.
+
+### Problem 6
+$H_0$: Wild-type and GMO plants germinate at the same rate
+$H_a$: Wild-type and GMO plants do not germinate at the same rate
+
+
+### Problem 7
+```{r}
+
+seed.sum <- sapply(d1[2:5], FUN = sum)
+
+seed.table <- cbind(c(as.numeric(seed.sum[1]), as.numeric(seed.sum[3])), c(as.numeric(seed.sum[2]), as.numeric(seed.sum[4])))
+seed.table
+seed.test <- fisher.test(seed.table)
+seed.test
+
+# Extract the p-value
+seed.test$p.value
+```
+
+### Problem 8
+Yes! p>1E-14. There is very likely a difference between wild-type and GMO plants
+
+### Problem 9
+```{r}
+seed.test$estimate
+```
+
+
+### Problem 10
+My research produced a GMO plant that is eleven-times more likely to germinate than normal the wild plants.
+
+
+Task 2
+----------------------
+
+```{r}
+# Download the dataset
+d2 <- read.csv("http://faraway.neu.edu/data/lab3_dataset2.csv")
+```
+
+
+### Problem 1
+
+$H_0$: GMO use does not change disease incidence
+$H_a$: GMO use changes disease incidence
+
+### Problem 2
+```{r}
+sapply(d2[2:5], FUN = sum)
+disease.table <- cbind(c(506, 465), c(228, 260))
+fisher.test(disease.table)
+```
+
+### Problem 3
+
+There may be a small association between GMO and disease, but it is not yet significant (p > 0.05).
+
+### Problem 4
+
+```{r}
+fin <- matrix(NA, nrow = nrow(d2), ncol = 1)
+
+for (i in 1:nrow(d2)) {
+  v <- d2[i, 2:5]
+  v.table <- cbind(c(as.numeric(v[1]), as.numeric(v[3])), c(as.numeric(v[2]), as.numeric(v[4])))
+  fin[i, 1] <- fisher.test(v.table)$p.value
+}
+
+rownames(fin) <- as.character(d2$countries)
+colnames(fin) <- "P Values"
+fin
+
+barplot(fin[1:10,], horiz = FALSE, ylab = "P Value", xlab = "Countries")
+
+```
+
+
+### Problem 5
+
+There is only a significant (p< 0.05) coorelation between GMO use and disease in India.
+
+### Problem 6
+
+I would recommend neither a ban nor moratorium. Proper controls were not used to generate this data, and therefore what we are seeing is a correlation, not a causation. 
+
+
+
+

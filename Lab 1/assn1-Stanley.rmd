@@ -1,0 +1,113 @@
+---
+title: "Assignment 1"
+author: "Julian Stanley"
+output: html_document
+---
+
+#### Top matter: Creating your own function
+
+```{r}
+# make a function
+my.fun2 <- function(x, y) {
+  a <- x^2
+  b <- a + y
+  return(b)
+}
+```
+
+
+```{r}
+# Case A
+my.fun2(5, 6)
+
+# Case B
+my.fun2(6, 5)
+
+# Case C
+my.fun2(x = 5, y = 6)
+
+# Case D
+my.fun2(y = 6, x = 5)
+```
+If the arguments are not explicitly stated, such as the case in Case A and Case B, then R assumes that the arguments are in the same order that they were initalized (in this case, x and then y). In Case D, even though the arguments are in a different order, the function call explicitly stated that y=6 and x=5. 
+
+### Exercise 1
+```{r}
+# Standard error function
+sd.error <- function(x) {
+  # Computers the standard error of a vector
+  # Args:
+  # x: The vector for which the standard deviation is being taken
+  # Returns: 
+  # The sample standard error for the given x
+  return(sd(x)/sqrt(length(x)))
+}
+```
+
+```{r}
+# Create an explanatory variable
+x <- 1:10
+
+# Create two response variables
+# runif is generating a random number between 0 and 1
+y1 <- runif(10)
+y2 <- runif(10)
+
+# plot y1 on the plot
+plot(x, y1, col="blue", pch = 19, xlim = c(0, 12), ylim = c(0,1))
+
+# add y2 to the plot
+points(x, y2, col= "green", pch = 1)
+
+# Add a legend, speciy the x,y coordinates of the legend, the text of the legend, the color, and the type of points
+legend(x = 11, y = 1, legend = c("y1", "y2"), col = c("blue", "green"), pch = c(19,1))
+
+```
+
+#### Task 1
+
+```{r}
+# Download the data
+d1 <- read.csv("http://faraway.neu.edu/data/lab1_dataset1.csv")
+```
+
+```{r}
+# Inspect data
+str(d1)
+```
+There are three factors called "sex", "treatment", and "outcome", each with two levels. All three contain levels of categorical variables: {female, male}, {drug, placebo}, and {not sick, sick}.
+
+```{r}
+# Create a contingency table
+table(d1)
+```
+
+(36/40) women treated with the drug were not sick, although nearly just as many (35/40) treated with a placebo were also not sick.
+
+(27/40) men treated with the drug were not sick, whereas much fewer men (4/40) treated with just th placebo were not sick.
+
+On the surface, it appears that this drug is effective in the male population, but no more effective than control in the female population.
+
+```{r}
+plot(table(d1), main = "Incidence of disease by sex with treatment or placebo", color = TRUE)
+```
+
+```{r}
+# Create a dataframe from the frequency table
+freqDf <- as.data.frame(table(d1))
+
+# Filter that dataframe down to just the sick values
+freqDf.sick <- freqDf[freqDf[["outcome"]] == "sick",]
+
+# Create a function to divide the first variable by the second
+div <- function(a, b) {
+  # Divided a by b
+  return(a/b)
+}
+```
+
+
+```{r}
+aggregate(freqDf.sick$Freq, by=list(freqDf.sick$sex), FUN = div())
+```
+

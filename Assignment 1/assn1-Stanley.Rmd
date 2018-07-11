@@ -1,0 +1,234 @@
+---
+title: "Assignment 1"
+author: "Madeleine Tomasic, Julian Stanley, Patrick Garrity, Emily Navarrete"
+
+output: html_document
+---
+
+Instructions
+------------
+
+Please follow the instructions below to complete your assignment:
+
+1. Open the R markdown template **biostatistics-assignmentTemplate.Rmd** in RStudio
+2. Insert the relevant information (i.e., assignment number, names of all students in the group)
+3. Save the file as **assnNUMBER-yourLastNames.Rmd** replacing **NUMBER** with the assignment \# and replacing **yourLastNames** with the last names of all individuals in the Group. For example **assn1-SmithJohnson.Rmd**
+4. Your answers should consist of the R code used to generate the results and their interpretation
+5. Do not use any special symbols such as \%, \#, \$, and \& in your answers
+6. Generate an HTML version of the Markdown document by clicking on the **Knit** icon in RStudio
+7. ONE PERSON in the group: Email an HTML and Markdown version of your completed assignment to your TA
+8. ONE PERSON in the group: Upload the Markdown version of your completed assignment to Turnitin on Blackboard. (Failure to complete this will result in a 10% deduction off your grade.)
+
+### Statement of Author contributions
+We were each assigned four problems each. After we solved the problems individually (and inevitably messed up in different ways), we went through
+each problem together and talked about the questions and corrected mistakes.
+
+Julian - Problem 1, 1-4
+Patrick - Problem 1, 5-8
+Madeleine - Problem 1, 9 and Problem 2, 1-3
+Emily - Problem 2, 4-8
+
+Problem 1
+---------
+### Question 1
+
+
+F1 is independent of F2 if:
+$$F1 \cap F2 = P(F1)*P(F2)$$
+$$F1 \cap F2 = P(F2)*P(F1|F2) = 0.001*0.003$$
+$$P(F1) * P(F2) = 0.001 * 0.003$$
+$$F1 \cap F2 = P(F1)*P(F2)$$
+
+Since the probability of getting the seasonal flu is the same, whether or not infected with swine flu, the swine flu and seasonal flu are independent. 
+
+### Question 2
+
+If the immune response to the swine flu was similar to the seasonal flu, then getting one flu would decrease the probability of getting the swine flu, since the immune response would have been primed. The independence suggests that swine flu has a different immune response than the seasonal flu.
+
+### Question 3
+
+Vary false detection rate and the prevalence
+
+```{r}
+# To represent prevalence values
+p.f2 <- c(0.2, 0.4, 0.6, 0.8)
+
+# To represent 100 false detection rates
+fdr.f2 <- seq(from = 0.01, to = 0.5, length.out = 100)
+
+# Initialize an empty matrix of all combinations 
+z <- matrix(NA, nrow = length(p.f2), ncol = length(fdr.f2))
+
+# Fill the matrix via Bayes' theorem
+for (prevalence in 1:length(p.f2)) {
+  for (fdr in 1:length(fdr.f2)) {
+    pbA <- 0.7
+    pA <- p.f2[prevalence]
+    pB <- fdr.f2[fdr] + pbA
+    z[prevalence, fdr] <- (pbA * pA) / pB
+  }
+}
+
+```
+
+
+### Question 4
+
+```{r}
+# Plot 0.2 Prevalence
+plot(fdr.f2, z[1, ] , col = "blue", pch = 1, ylim = c(0,1), main = "P(F2|D) for varying FDR and Prevalence", xlab = "False Discovery Rate", ylab = "P(F2|D)")
+
+# Add 0.4
+points(fdr.f2, z[2, ] , col = "purple", pch = 2)
+
+# Add 0.6
+points(fdr.f2, z[3, ] , col = "darkseagreen2", pch = 3)
+
+# Add 0.8
+points(fdr.f2, z[4, ] , col = "deeppink4", pch = 4)
+
+# Add a legend
+legend("topright", legend = c("0.2", "0.4", "0.6", "0.8"), title = "Prevalence of Swine Flu", col = c("blue", "purple", "darkseagreen2", "deeppink4"), pch = c(1, 2, 3, 4))
+
+# Add a line at .5
+abline(a = .5, b = 0)
+
+
+```
+
+The line at $P(F2|D)=0.5$ represents the point at which the test performs no better than chance. Below the line, the test performs worse than chance. 
+
+### Question 5
+From looking at the plot, the relationship between the false detection rate of swine flu negatively impacts the discovery rate of correct detection and that the greater the positive detection, the greater negative value for the slope. In other words, the greater the prevelance of swine flu the greater effect false detection rate has, and that as the the false discovery rate increases the effect it has on the P(F2ID). This trend continues from the greatest prevelance value, 0.8, until the 0.2 mark indicating the P(F2ID). Its at this point that effect false discovery has on the correct discovery decreases, as seen when looking at the trend line.
+### Question 6
+Based off the figure, it seems that the effectives used to detect for swine flu successfully is relative low and show be reevaluated to decrease the chance of false discovery.
+
+### Question 7
+```{r}
+p.f1.v2<-c(0.2,0.4,0.6,0.8)
+v1<-seq(from=0.001, to=1.0, length.out=100)
+z<-matrix(NA, nrow=length(p.f1.v2),ncol=length(v1))
+for(i in 1:length(p.f1.v2)) {
+  for(j in 1:length(v1)){
+    f1 <- (0.05 * v1[j]) + (0.4 * v1[j])
+    f2 <- ((p.f1.v2[i] * (1 - v1[j])) + (0.05 * (1 - v1[j])))
+    z[i, j] <- f1 + f2
+  }
+}
+```
+
+
+### Question 8
+```{r}
+par(mfrow=c(1,1))
+plot(v1,z[1,],type="l",xlab="Prevalence of vaccine 1",ylim=c(0,1.5),main="Prevalence of Flu as Vaccine 1 increases", ylab="Total prevalence of flu",col="blue",lty=1)
+lines(v1,z[2,],xlab="FDR",ylab="Prob That Has Flu given diagnosis", col="purple")
+lines(v1,z[3,],xlab="FDR",ylab="Prob That Has Flu given diagnosis", col="darkseagreen2")
+lines(v1,z[4,],xlab="FDR",ylab="Prob That Has Flu given diagnosis", col="deeppink4")
+abline(,0.5)
+legend("topright",legend=c("P(f1.v2)=0.2", "P(f1.v2)=0.4","P(f1.v2)=0.6","P(f1.v2)=0.8"), col=c("blue","purple","darkseagreen2","deeppink4"),lty=1)
+```
+
+### Question 9 
+If the effectiveness of vaccine 2 on flu 1 is high (e.g. $P(F1|V2) > 0.5) then the more vaccine 1, the better (the smaller total flu prevalence). If the effectiveness of vaccine 2 on flu 1 is low, on the other hand (e.g. $P(F1|V2) > 0.5), then the less vaccine 1, the better (the smaller total flu prevalence). 
+
+Problem 2
+---------
+
+### Question 1
+
+```{r}
+d1 <- read.csv(file = "http://faraway.neu.edu/data/assn1_dataset1.csv")
+str(d1)
+```
+
+$H_0:$  There is no correlation between age and strain of influenza.
+
+$H_a:$ There is some correlation between age and strain of influenza. 
+
+
+### Question 2
+
+Use function aggregate to compute (i) the mean and (ii) the range of the age of individuals
+infected by the seasonal vs. swine flu. What does this information suggest regarding the age
+distribution of those affected by swine vs. seasonal flu? 
+
+```{r}
+aggregate(age ~ flu, FUN = mean, data = d1)
+aggregate(age ~ flu, FUN = range, data = d1)
+```
+The mean is extremely similar for both seasonal and swine flus, insinuating that there is no correlation between strain and age. However, after looking at the ranges, it is clear that there is a strong differentiation between the ages associated with seasonal and swine flus, and the mean is being skewed, potentially, by outliers or some other factor. Therefore, some other summary statistic should be used to interpret this data, such as median, standard deviation, or a plot. 
+
+### Question 3
+
+Generate a 2-panel figure (2-rows x 1-column) containing a histogram of the age distribution
+of individuals afflicted by the seasonal flu (panel 1) and the same for individuals afflicted
+by the swine flu (panel 2). Make sure to set the xrange for both panels via the argument
+xlim=c(0, 90) for function hist. Hint: you'll need to subset the data from d1 first (3
+points)
+
+```{r}
+## first plot - left half of x-axis, right margin set to 0 lines
+par(fig = c(0, .5, 0, 1), 
+    mar = c(5,4,3,0))
+hist(d1$age[d1$flu=="seasonal"], 
+     ann = FALSE, 
+     las = 1, 
+     xlim=c(0, 100), 
+     ylim = c(0,20),
+     breaks = seq(0, 100, by = 5),
+     border = "red",
+     col = "pink")
+## second plot - right half of x-axis, left margin set to 0 lines
+par(fig = c(.5, 1, 0, 1), 
+    mar = c(5,0,3,2), 
+    new = TRUE)
+hist(d1$age[d1$flu=="swine"], 
+     ann = FALSE, 
+     axes = FALSE, 
+     xlim=c(0, 100), 
+     ylim = c(0,20),
+     border="cyan", 
+     col="blue",
+     breaks = seq(0, 100, by = 5))
+axis(1)
+axis(2, lwd.ticks = 0, labels = FALSE)
+title(main = 'Spread of Age for Different Strains of Influenza', 
+      xlab = 'age', 
+      outer = TRUE, 
+      line = -2)
+# add a legend
+legend("topright", 
+       legend=c("seasonal","swine"), 
+       fill = c("pink","blue"), 
+       cex=0.8)
+```
+
+
+### Question 4
+Given the figure above, it does not appear that the two flu strains target the same populations. It appears to be that the seasonal flu has higher prevalence among children and the elderly, whereas swine flu has higher prevalence among adults ages 18 to 65.
+
+### Question 5
+```{r}
+i <- aggregate(age[age >= 18 & age <= 65] ~ flu[age >= 18 & age <= 65], FUN = length, data = d1)
+
+ii <- aggregate(age[age < 18 | age > 65] ~ flu[age < 18 | age > 65], FUN = length, data = d1)
+
+Q5 <- data.frame("Prevalence, 18-65" = i$`age[age >= 18 & age <= 65]`, "Prevalence, Pediatric & Geriatric" = ii$`age[age < 18 | age > 65]`, row.names = i$`flu[age >= 18 & age <= 65]`)
+Q5
+```
+
+
+### Question 6
+```{r}
+mosaicplot(Q5, off = 20, main = "Prevalence of Flu Strains in Different Age Groups", las = 1)
+```
+
+When analyzing a mosaic plot, a difference in the vertical positions at which the two columns meet suggests an association between two categorical variables. Given that this feature is observed in the mosaic plot created, the plot suggests an association between age and the strain of influenza contracted in this sampling. By looking at the plot, we can observe that the data are consistent with the alternative hypothesis, which hypothesizes an association between the two.
+
+####Question 7
+```{r}
+Q5
+chisq.test(Q5)
+```
+

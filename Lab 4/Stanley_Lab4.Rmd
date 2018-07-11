@@ -1,0 +1,318 @@
+---
+title: "Lab #4"
+author: "Julian Stanley"
+date: "03 March 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# This is where you set global options (leave as-is)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Introductory Matter
+-------------
+
+```{r}
+x <- rnorm(100000)
+
+## make a histogram
+hist(x)
+
+## Make a QQ plot
+qqnorm(x)
+
+## Add a theoretical line
+qqline(x, col = "red")
+```
+
+
+```{r}
+# Negative control: different distribution
+
+y <- rlnorm(1000)
+
+# Histogram
+hist(y)
+
+## QQ plot
+qqnorm(y)
+
+## Still can add a line
+qqline(y, col = "red")
+
+# Log transform
+log_y <- log10(y)
+hist(log_y)
+qqnorm(log_y)
+qqline(log_y, col = "red")
+```
+
+
+
+Let's do some T tests
+
+
+Task 1
+-------------
+
+```{r}
+# Download the data
+d1 <- read.csv("https://nofile.io/f/jCpaCBvZ2pa/d1.csv")
+```
+
+### Problem 1
+
+```{r}
+str(d1)
+```
+
+$H_0:$ Difference in mean ages equals zero.
+
+$H_a:$ Difference in mean ages does not equal zero.
+
+### Problem 2 and 3
+
+```{r}
+par(mfrow=c(1,2))
+hist(d1$age, main = "Histogram of age", xlab = "Age")
+hist(log10(d1$age), main = "Histogram of log age", xlab = "log(Age)")
+```
+
+ 
+ 
+ 
+A log transformation is not necessary in this case, methinks.
+```{r}
+## Make a QQ plot
+qqnorm(d1$age)
+
+## Add a theoretical line
+qqline(d1$age, col = "red")
+
+## Do a test to see if it's normally distributed
+shapiro.test(d1$age)
+```
+
+
+### Problem 4
+
+```{r}
+control.age <- d1$age[d1$treatment == "control"]
+vaccine.age <- d1$age[d1$treatment == "vaccinated"]
+
+var.test(control.age, vaccine.age)
+
+t.test(control.age, vaccine.age, var.equal = TRUE)
+
+```
+
+Conclusion: the mean difference between ages is 0.
+
+### Problem 5
+
+$H_0$ Mean HPV score in treatment = Mean HPV score in control
+$H_a$ Mean HPV score in treatment does not equal Mean HPV score in control
+
+### Problem 6 - 8
+
+```{r}
+hist(d1$score)
+par(mfrow=c(1,2))
+hist(d1$score, main = "Histogram of score", xlab = "score")
+hist(log10(d1$score), main = "Histogram of log score", xlab = "log(score)")
+```
+
+
+
+The log of score looks normally distributed
+
+
+```{r}
+## predict that the log of score is normally distributed
+logScore <- log(d1$score)
+
+## Make a QQ plot
+qqnorm(logScore)
+
+## Add a theoretical line
+qqline(logScore, col = "red")
+
+## Do a test to see if it's normally distributed
+shapiro.test(logScore)
+```
+
+### Problem 9
+
+Seperate data into vaccine and control for score
+```{r}
+vaccineScore <- log(d1$score[d1$treatment == "vaccinated"])
+controlScore <- log(d1$score[d1$treatment == "control"])
+
+vaccineScoreRaw <- d1$score[d1$treatment == "vaccinated"]
+controlScoreRaw <- d1$score[d1$treatment == "control"]
+```
+
+```{r}
+var.test(vaccineScore, controlScore)
+```
+
+
+```{r}
+t.test(vaccineScore, controlScore, var.equal = TRUE)
+```
+
+
+### Problem 10
+
+
+```{r}
+meanC <- mean(controlScoreRaw)
+meanV <- mean(vaccineScoreRaw)
+
+se <- function(x) sqrt(var(x)/length(x))
+
+seC <- se(controlScoreRaw)
+seV <- se(vaccineScoreRaw)
+
+conInt <- function(x) c(mean(x) - (qnorm(0.975) * se(x)), mean(x) + (qnorm(0.975) * se(x)))
+
+# Confidence interval for control
+controlInt <- conInt(controlScoreRaw)
+
+# For vaccine
+vaccineInt <- conInt(vaccineScoreRaw)
+
+my_bar <- barplot(c(meanC, meanV), xlab = "HPV susceptibility", names.arg = c("Control", "Vaccine"), ylim = c(0, 20))
+
+arrows(x0 = my_bar, y0 = c(controlInt[1], vaccineInt[1]) , x1 = my_bar, y1 = c(controlInt[2], vaccineInt[2]), angle = 90, code = 3)
+
+text(x = my_bar, y = c(controlInt[2], vaccineInt[2]), c("a", "b"), pos = 3)
+```
+
+### Problem 11
+
+I want to approve this vaccine! I think it works.
+
+### Problem 12
+
+```{r}
+meanV/meanC
+meanC/meanV
+```
+
+
+### Problem 13
+
+```{r}
+# Download the data
+d2 <- read.csv("https://nofile.io/f/KcWTFo0Rnst/d2.csv")
+```
+
+### Problem 14
+
+```{r}
+head(d2)
+```
+
+
+```{r}
+scores <- aggregate(d2$score, FUN = mean, by = list(d2$trial, d2$treatment))
+colnames(scores) <- c("Trial", "Treatment", "Mean Score")
+
+scores
+```
+
+### Problem 15
+
+```{r}
+ratios <- matrix(data = NA, nrow = 10, ncol = 2)
+
+for (i in 1:10) {
+  table <- scores[scores["Trial"] == i]
+  ## Control divided by vaccinated
+  ratios[i, 1] <- i
+  ratios[i, 2] <- as.numeric(table[5])/as.numeric(table[6])
+}
+
+colnames(ratios) <- c("Trial", "Ratio of Control to Vaccine")
+rownames(ratios) <- 1:10
+ratios
+```
+
+
+### Problem 16
+
+```{r}
+means <- mean(ratios[,2])
+
+t.test(ratios[,2], mu = 3.01)
+t.test(ratios[,2], mu = 3.2)
+```
+
+They're being a little misleading, but they're not lying (according to the T test). They also got the same values that we got!
+
+
+Task 2
+--------------
+
+### Problem 1
+
+```{r}
+# Download the data
+d3 <- read.csv("https://nofile.io/f/v8UMeTOzDq4/d3.csv")
+```
+
+
+
+### Problem 2
+
+```{r}
+str(d3)
+```
+
+```{r}
+plot(d3$autism ~ d3$year, col = "purple", pch = 19, ylim = c(0, 20), ylab = "Incidence", xlab = "Year")
+points(d3$vaccine ~ d3$year, col = "pink", pch = 19)
+legend("topright", c("Autism", "Vaccines"), pch = c(19, 19), col = c("purple", "pink"))
+
+```
+
+The graph shows that austism and vaccines have both increased in the time between 1950 and 2000. This is NOT evidence of one causing the other, however.
+
+### Problem 3
+
+If I had the time and funding, I would create a longitudinal study. I would track mothers into groups controled for demographics and the like. After the mothers decided to either vaccine or not vaccine their children, I would try to pair children from similar demographs who either did or did not get vaccinated, and then compare autism rates.
+
+### Problem 4
+
+```{r}
+# Download the data
+d4 <- read.csv("https://nofile.io/f/EvDzvX7JYCf/d4.csv")
+```
+
+### Problem 5
+
+```{r}
+vac <- subset(d4, treatment == "vaccine")
+control <- subset(d4, treatment == "control")
+```
+
+
+
+
+
+
+```{r}
+
+x <- download.file("https://github.com/julianstanley/Biostats/blob/master", "d4.csv", method = "curl")
+
+x
+```
+
+
+
+
+
+

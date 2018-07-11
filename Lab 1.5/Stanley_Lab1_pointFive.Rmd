@@ -1,0 +1,271 @@
+---
+title: "Lab #1.5"
+author: "Julian Stanley"
+date: "2 February 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# This is where you set global options (leave as-is)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data(chickwts)
+head(chickwts)
+```
+
+```{r}
+my.mat <- matrix(1:30, ncol = 10, nrow = 3)
+my.mat
+```
+
+
+
+```{r}
+# Accessing matricies are a little different -- must silce
+
+# First row
+my.mat[1, ]
+
+# Second column
+my.mat[, 2]
+
+# Row 1 column 2
+my.mat[1, 2]
+
+# Eow 2, column 4
+my.mat[2, 4]
+```
+
+```{r}
+dim(my.mat)
+nrow(my.mat)
+ncol(my.mat)
+```
+
+
+```{r}
+data(cars)
+head(cars)
+sapply(cars, FUN = mean)
+```
+
+```{r}
+for (i in 1:10) {
+  print(i)
+}
+```
+
+
+
+```{r}
+i <- 0
+for (i in 1:10) {
+  # The "i" inside of this loop, shown in the instructions, is not necessary 
+}
+
+i
+```
+
+
+```{r}
+sapply(cars, FUN = mean)
+```
+
+### Exercise 2b
+
+```{r}
+for (i in 1:ncol(cars)) {
+  print(mean(cars[,i]))
+}
+```
+
+
+```{r}
+for (i in 1:ncol(cars)) {
+  print((c(colnames(cars)[i], mean(cars[,i]))))
+}
+```
+
+
+```{r}
+for (i in 1:5) {
+  for (j in c("a", "b", "c", "d", "e")) {
+    print(paste(i, j))
+  }
+}
+```
+
+```{r}
+output_matrix <- matrix(nrow = 5, ncol = 5) 
+output_matrix
+j_letter <- c("a", "b", "c", "d", "e")
+
+for (i in 1:5) {
+  for (j in 1:5) {
+    temp_output <- paste(i, j_letter[j])
+    output_matrix[i,j] <- temp_output
+  }
+}
+output_matrix
+
+```
+
+```{r}
+x <- seq(0, 1, by = 0.1)
+x
+y <- seq(0, 100, by = 20)
+z <- matrix(NA, nrow = length(x), ncol = length(y))
+z
+length(x)
+length(y)
+
+
+for (i in 1:length(x)) {
+  for (j in 1:length(y)) {
+    z[i,j] <- (10*x[i]^2) + sqrt(y[j])
+  }
+}
+
+z
+```
+
+
+```{r}
+thingy <- c(1,2,3,4)
+
+for (i in thingy) {
+  print(i)
+}
+```
+
+```{r}
+input <- 100:120
+length(input)
+```
+
+```{r}
+output <- numeric(length(input))
+output
+```
+
+
+```{r}
+for (i in 1:length(output)) {
+  output[i] <- input[i] * 5 + 1
+}
+output
+```
+
+```{r}
+input * 5 + 1
+```
+
+
+
+```{r}
+# Normal distribution
+x <- rnorm(100, mean = 5, sd = 1.3)
+hist(x)
+```
+
+
+```{r}
+ud <- runif(n = 1000, min = 4, max = 6)
+hist(ud)
+```
+
+
+```{r}
+# Like rolling a 10-sided dice 1000 times and having a 50% chance of success
+bd <- rbinom(n = 1000, size = 10, p = 0.5)
+hist(bd)
+```
+
+```{r}
+choose(4,2)
+```
+
+
+```{r}
+# Poisson distribution
+pd <- rpois(n = 1000, lambda = 200)
+hist(pd)
+```
+
+
+```{r}
+# Probability of getting a 5 from a normal distribution when the mean is 5
+dnorm(x = 5, mean = 5, sd = 1.3)
+dnorm(5, mean = 5, sd = 0.1)
+dnorm(5, mean = 5, sd = 1.3)
+dnorm(1, mean = 5, sd = 1.3)
+x1 <- seq(0, 10, by = 0.1)
+y <- dnorm(x1, mean = 5, sd = 1.3)
+plot(x1, y)
+plot(x1, y, type = "l")
+```
+
+```{r}
+dbinom(x = 2, size = 10, prob = 0.5)
+```
+
+```{r}
+dbinom(2, size = 10, 1/6)
+```
+
+
+```{r}
+x1 <- seq(0, 10, by = 0.1) 
+y2 <- pnorm(x1, mean = 5, sd = 1.3)
+plot(x1, y2, type = "l", ylab = "Cumulative probability")
+```
+
+
+```{r}
+pnorm(2, mean = 5, sd = 1.3)
+pnorm(8, mean = 5, sd = 1.3, lower.tail = FALSE)
+```
+
+```{r}
+# 2 trailed
+2* pnorm(8, mean = 5, sd = 1.3, lower.tail = FALSE)
+```
+
+```{r}
+# Observed 2 or fewer heads from 10 coin flips
+dbinom(2, 10, p = 0.5) + dbinom(1, 10, p = 0.5) + dbinom(0, 10, p = 0.5)
+pbinom(2, 10, p = 0.5)
+```
+
+Probability of observing 8 or more heads from 10 coin flips
+
+```{r}
+dbinom(8, 10, 0.5) + dbinom(9, 10, 0.5) + dbinom(10, 10, p = 0.5) 
+# 8 and above
+pbinom(7, 10, p = 0.5, lower.tail = FALSE)
+```
+
+
+### Exercise 8
+
+```{r}
+pbinom(0, size = 10, p = 0.5) * 2
+```
+
+
+```{r}
+x <- 4 
+if(x > 9) {
+  print("X is greater than or equal to 9")
+} else {
+  print("x is less than 9")
+}
+
+```
+
+
+
+
+

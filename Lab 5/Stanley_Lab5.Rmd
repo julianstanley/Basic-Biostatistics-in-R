@@ -1,0 +1,316 @@
+---
+title: "Lab #4"
+author: "Julian Stanley"
+date: "03 March 2018"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+ANOVA
+
+```{r}
+# 30 of each of T1, T2, and T3. Response has 90 total: mean of 0, 1, and 2
+my.dataframe <- data.frame(response = c(rnorm(30), rnorm(30, mean = 1), rnorm(30, mea = 2)), treatment = rep(c("T1", "T2", "T3"), each = 30))
+
+head(my.dataframe)
+
+# Let's do an anova
+model <- aov(response ~ treatment, data = my.dataframe)
+
+# Check an anova's assumptions
+par(mfrow = c(2, 2))
+anovaPlot <- plot(model)
+
+
+# Get an anova table
+summary(model)
+```
+
+
+```{r}
+# Now let's do a post-hoc test to see what's different
+mod.tukey <- TukeyHSD(model)
+tukeyPlot <- plot(mod.tukey, las = 1)
+
+# See all of our P values!
+mod.tukey
+
+# Automatic letters!
+require(multcompView)
+labels <- multcompLetters(mod.tukey$treatment[, "p adj"])$Letters
+labels
+labels <- labels[c("T1", "T2", "T3")]
+labels
+
+
+summary(model)
+
+dataPlot <- plot(response ~ treatment, data = my.dataframe)
+#text(x = dataPlot, y = c(4,4,4), labels, pos = 3)
+```
+
+
+Merging dataframes
+
+```{r}
+# Parens make it run and display all in one step
+(dat1 <- data.frame(Year = 2000:2010, temp = c(rnorm(10), 0)))
+(dat2 <- data.frame(Year = 1999:2006, CO2 = c(rnorm(7), 0)))
+
+# Only overlapping data
+merge(dat1, dat2)
+
+# Merge all data
+merge(dat1, dat2, all.x = TRUE)
+
+# Different? -- Includes 1999
+merge(dat1, dat2, all.x = TRUE, all.y = TRUE)
+
+# By x -- sorting by x on the second column. Looking for common values
+?merge
+merge(dat1, dat2, by.x = 1, by.y = 1)
+```
+
+
+
+Task 1
+--------------
+
+```{r}
+# Download the dataset
+d1 <- read.csv("http://faraway.neu.edu/data/lab5_dataset1.csv")
+
+# Inspect the dataset
+head(d1)
+summary(d1)
+```
+
+
+### Problem 1
+$$H_0:$$ There is no difference between the pairwise comparisons between control, t1, t2, t3, and t4.
+$$H_a:$$ There is some difference between the pairwise comparisons between control, t1, t2, t3, and t4.
+
+### Problem 2
+
+```{r}
+# Make sure the data is actually normally distributed
+hist(d1$mortality)
+shapiro.test(d1$mortality)
+```
+
+The data is not normally distributed
+
+### Problem 3
+```{r}
+d1Log <- d1
+d1Log$mortality <- log10(d1$mortality)
+hist(d1Log$mortality)
+shapiro.test(d1Log$mortality)
+```
+
+A log10 transformation makes the data normal.
+
+### Problem 4
+```{r}
+# Anova with the log10 data
+task1Model <- aov(mortality ~ treatment, data = d1Log)
+
+```
+
+### Problem 5
+```{r}
+# Summary of the anove
+summary(task1Model)
+```
+
+Conclusion: there is a significant difference between some of the pairwise comparisons between the 5 categories.
+
+### Problem 6
+
+Tukey adjusts the p-value to compensate for the p-value inflation that multiple comparisons would cause. 
+
+### Problem 7
+
+```{r}
+# Tukey poc-hoc analysis
+task1Tukey <- TukeyHSD(task1Model)
+task1Tukey
+```
+
+
+### Problem 8
+```{r}
+# Visualize the tukey
+plot(task1Tukey, las = 1)
+```
+
+### Problem 9 & 10
+
+```{r}
+# Generate letters
+require(multcompView)
+labels <- multcompLetters(task1Tukey$treatment[, "p adj"])$Letters
+labels <- labels[c("control", "t1", "t2", "t3", "t4")]
+```
+
+
+### Problem 11
+```{r}
+# Aggregate the mean mortality by treatment
+task1Means <- aggregate(mortality ~ treatment, FUN = mean, data = d1)
+task1Means
+
+```
+
+Chunk one: find the confidence intervals of everything
+```{r}
+# Define a one-line function that takes in a numeric vector and returns the standard error of that vector
+se <- function(x) sqrt(var(x)/length(x))
+
+# Find the standard errors of each 
+task1All <- data.frame(subset(d1, treatment == "control")$mortality,
+              subset(d1, treatment == "t1")$mortality,
+              subset(d1, treatment == "t2")$mortality,
+              subset(d1, treatment == "t3")$mortality,
+              subset(d1, treatment == "t4")$mortality)
+
+treatments <- c("control", "t1", "t2", "t3", "t4")
+
+# Another way to generate the same task1All dataframe, just more fun/scalable
+task1All2 <- data.frame(1:30)
+
+for(t in treatments) {
+  task1All2 <- cbind(task1All2, subset(d1, treatment == t)$mortality)
+}
+
+task1All2 <- task1All2[2:6]
+colnames(task1All2) <- treatments
+
+# Define a function that takes in a numeric vector and returns the 95% confidence interval of that vector
+conInt <- function(x) c(mean(x) - (qnorm(0.975) * se(x)), mean(x) + (qnorm(0.975) * se(x)))
+
+
+# Find the confidence intervals
+conIntList <- c()
+for(column in names(task1All)) {
+  conIntList <- c(conIntList,(conInt(task1All[,column])))
+}
+
+
+```
+
+Second chunk: plot the barplot with confidence intervals and labels
+```{r}
+# Plot the mortality by treatment
+mortBar <- barplot(task1Means$mortality, names = task1Means$treatment, xlab = "Treatment Condition", ylab = "Mortality", main = "Mortality by Treatment", ylim = c(0, 30))
+mortBar
+arrows(x0 = mortBar, y0 = c(conIntList[1], conIntList[3], conIntList[5], conIntList[7], conIntList[9]) , x1 = mortBar, y1 = c(conIntList[2], conIntList[4], conIntList[6], conIntList[8], conIntList[10]), angle = 90, code = 3)
+
+text(x = mortBar, y = c(conIntList[2], conIntList[4], conIntList[6], conIntList[8], conIntList[10]), labels, pos = 3)
+
+```
+
+### Problem 12
+Treatments 2 and 4 seem best at reducing mortality
+
+Task 2
+--------------
+
+```{r}
+# Download the data
+d2 <- read.csv("http://faraway.neu.edu/data/lab5_dataset2.csv")
+
+summary(d2)
+```
+
+
+### Problem 1
+```{r}
+shapiro.test(d2$mortality)
+hist(d2$mortality)
+
+# Log transform
+d2_log <- d2
+d2_log$mortality <- log10(d2_log$mortality)
+
+hist(d2_log$mortality)
+
+# Run the anova
+task2Model <- aov(mortality ~ treatment, data = d2_log)
+
+summary(task2Model)
+
+par(mfrow = c(2,2))
+plot(task2Model)
+```
+The ANOVA table suggests that the mean mortality is different across treatments.
+
+### Problem 2
+
+```{r}
+# Tukey poc-hoc analysis
+task2Tukey <- TukeyHSD(task2Model)
+task2Tukey
+plot(task2Tukey, las = 1)
+```
+
+
+
+### Problem 3
+
+```{r}
+# Generate letters
+require(multcompView)
+labels <- multcompLetters(task2Tukey$treatment[, "p adj"])$Letters
+labels <- labels[c("control", "t1", "t2", "t3", "t4")]
+```
+
+
+Chunk one: find the confidence intervals of everything
+```{r}
+# Aggregate the mean mortality by treatment
+task2Means <- aggregate(mortality ~ treatment, FUN = mean, data = d2)
+task2Means
+# Define a one-line function that takes in a numeric vector and returns the standard error of that vector
+se <- function(x) sqrt(var(x)/length(x))
+
+# Find the standard errors of each 
+task2All <- data.frame(subset(d2, treatment == "control")$mortality,
+              subset(d2, treatment == "t1")$mortality,
+              subset(d2, treatment == "t2")$mortality,
+              subset(d2, treatment == "t3")$mortality,
+              subset(d2, treatment == "t4")$mortality)
+
+treatments <- c("control", "t1", "t2", "t3", "t4")
+
+# Define a function that takes in a numeric vector and returns the 95% confidence interval of that vector
+conInt <- function(x) c(mean(x) - (qnorm(0.975) * se(x)), mean(x) + (qnorm(0.975) * se(x)))
+
+
+# Find the confidence intervals
+conIntList <- c()
+for(column in names(task2All)) {
+  conIntList <- c(conIntList,(conInt(task2All[,column])))
+}
+
+
+```
+
+Second chunk: plot the barplot with confidence intervals and labels
+```{r}
+# Plot the mortality by treatment
+mortBar <- barplot(task2Means$mortality, names = task2Means$treatment, xlab = "Treatment Condition", ylab = "Mortality", main = "Mortality by Treatment", ylim = c(0, 30))
+mortBar
+arrows(x0 = mortBar, y0 = c(conIntList[1], conIntList[3], conIntList[5], conIntList[7], conIntList[9]) , x1 = mortBar, y1 = c(conIntList[2], conIntList[4], conIntList[6], conIntList[8], conIntList[10]), angle = 90, code = 3)
+
+text(x = mortBar, y = c(conIntList[2], conIntList[4], conIntList[6], conIntList[8], conIntList[10]), labels, pos = 3)
+
+```
+
+Since treatment 2 also kills the predators of the pests, we should use treatment 4! :)

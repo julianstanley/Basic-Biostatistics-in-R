@@ -1,0 +1,284 @@
+---
+title: "Lab #2"
+author: "Julian Stanley"
+date: "16 February 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# This is where you set global options (leave as-is)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Some Introductory Material
+-------------------------
+
+```{r}
+a <- rnorm(100)
+hist(a)
+
+hist(a, main = "Title", xlab = "X label", ylab = "Y label")
+
+my.hist <- hist(a)
+my.hist
+```
+
+```{r}
+my.hist$counts
+
+# Change number to a character
+b <- rnorm(1)
+
+b
+
+as.character(b)
+```
+
+```{r}
+my.string <- as.character(b)
+substr(my.string, start = 1, stop = 3)
+```
+
+```{r}
+c <- 10:20
+length(c)
+```
+
+```{r}
+# Binominal test 
+n <- 10
+k <- 8
+p <- 0.5
+
+binom.test(x = k, n = n, p = p)
+```
+
+```{r}
+# Chi-sqr test
+observed <- 1:10
+expected <- 1:10
+
+chisq.test(x = observed, p = expected/sum(expected))
+```
+
+```{r}
+bp <- barplot(observed, names.arg = c(1:10))
+points(bp, expected)
+```
+
+Task 1
+--------
+
+### Problem 1
+
+```{r}
+
+# Probability of 3 out of 20 species contracting their range southward
+dbinom(3, 21, p = 0.5)
+```
+
+### Problem 2
+```{r}
+# As extreme or more extreme than 3 out of 20; two tailed
+pbinom(3, 21, p = 0.5) * 2
+```
+
+### Problem 3
+```{r}
+# As extreme or more extreme than 3 out of twenty equals probability of as extreme or more extreme than 18
+pbinom(17, 21, p = 0.5, lower.tail = FALSE) *2 ==
+pbinom(3, 21, p = 0.5, lower.tail = TRUE) *2
+```
+
+
+Task 2
+---------------
+
+### Problem 1
+
+```{r}
+d2012 <- read.csv("http://faraway.neu.edu/data/lab2_dataset1.csv")
+
+# Use substr to extract first digit
+first.digit <- substr(as.character(d2012$voted.democrat), start = 1, stop = 1)
+
+# Convert the first digit to a number
+first.digit <- as.numeric(first.digit)
+```
+
+
+### Problem 2
+```{r}
+# Use the seq() function to create a sequence of numbers
+seq(0.5, 9.5, by = 1)
+digit.hist <- hist(first.digit, breaks = seq(0.5, 9.5, by = 1), plot = FALSE)
+head(digit.hist)
+
+observed <- digit.hist$counts
+
+hist(first.digit)$counts
+
+digit.hist
+```
+
+### Problem 3
+
+```{r}
+# Benford's law (gives a proportion)
+(expected <- log10(1 + 1/(1:9)))
+# Expected count for each digit based on Benford's Law
+(expected <- round(expected * length(first.digit))/sum(expected))
+```
+
+### Problem 4
+
+```{r}
+obPlot <- barplot(observed, ylim = c(0, 400))
+points(obPlot, expected)
+```
+
+
+### Problem 5
+It does not look consistent with Benford's law
+
+### Problem 6
+
+Null Hypothesis: The election counts conform with Benford's law
+
+### Problem 7
+```{r}
+chisq.test(x = observed, p = expected/sum(expected))
+```
+
+### Problem 8
+Fail to reject null hypothesis: the election counts conform with Benford's law
+
+Task 3
+--------------
+
+### Problem 1
+
+$$P(F|W) = 0.75$$
+
+### Problem 2
+
+$$P(F|\bar{W}) = 0.20$$
+
+
+
+### Problem 3
+
+$$P(W|F) =\frac{P(F|W) * P(W)}{P(F)}$$
+
+### Problem 4
+
+$$P(F) = P(F|W)*P(W) + P(F|\bar{W})*(1-P(W))$$
+
+```{r}
+# P(Win)
+pW=0.5
+
+# P(Favored|Win)
+pF.W= 0.75
+
+# P(Favored|Loss)
+pF.L= 0.2
+
+# P(Favored)
+pF= (pF.W * pW) + (pF.L * (1-pW))
+
+# P(Win|Favored)
+pW.F= pF.W * pW / pF
+
+
+```
+
+
+### Problem 5
+
+```{r}
+# P(Win) is now a vector between zero and one
+pWvals=seq(0, 1, length=100)
+
+
+# P(Favored|Win) is still the same
+pF.W= 0.75
+
+# P(Favored|Loss) is still the same
+pF.L= 0.2
+
+# P(Favored) formula is still the same, just pW --> pwVals, pL --> pLvals
+pF = (pF.W * pWvals) + (pF.L * (1-pWvals))
+
+# P(Win| Favored) formula is still the same, pW --> pwVals, pL --> pLvals
+pW.Fvals <- pF.W * pWvals / pF
+
+
+```
+
+
+
+### Problem 6
+
+```{r}
+plot(x = pWvals, y = pW.Fvals, abline(b = 1, a = 0),
+     col = "blue", xlab = "Probability of Winning", ylab = "Probability of winning, given favored in polls", main = 
+      "Change in P(W|F) with the change in P(W)")
+```
+
+
+When the blue line is below the black line,$P(W|F) < P(F)$, whereas when the blue line is above the black line, $P(W|F) > P(F)$. In this case, the chances of winning, given that you are favored is almost always higher than the probability of winning. That difference is most dramatic, however, around when you have around a 40% chance of winning and are favored. 
+
+
+Task 4
+----------------
+
+### Problem 1
+
+```{r}
+hist(d2012$population.size, main = "2012 Pop Size", xlab = "population size", ylab = "frequency")
+```
+
+The population frequency is left-skewed
+
+
+### Problem 2
+```{r}
+# Compute the skewness of this vector
+skewness <- function(x) {
+  # X: Vector numbers
+  mean <-  mean(x)
+  sd = sd(x)
+  
+  return (sum(((x - mean) / sd)^3))
+}
+```
+
+### Problem 3
+```{r}
+skewness(d2012$population.size)
+mean(d2012$population.size)
+median(d2012$population.size)
+```
+
+
+### Problem 4
+
+```{r}
+hist(d2012$voted.democrat / d2012$voted.republican, main = "Ratio of voting Democrat/Republican, by district", xlab = "Ratio Dem/Rep", ylab = "frequency")
+```
+
+```{r}
+dem = d2012$voted.democrat
+rep = d2012$voted.republican
+
+hist(dem, col = adjustcolor('blue', alpha = 0.3), main = "Republican VS Democrat voting distributions", xlab = "Votes", ylab = "frequency")
+par(new = TRUE)
+hist(rep, col = adjustcolor('red', alpha = 0.3), main = "", xlab = "", ylab = "", axes = FALSE)
+
+legend("topright", legend = c("Democrat", "Republican"), col = c("blue", "red"), pch = c(19,19))
+```
+
+
+The distributions of democrat and republican votes have a similar distributions

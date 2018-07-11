@@ -1,0 +1,514 @@
+---
+title: "Lab #6"
+author: "Julian Stanley"
+date: "30 March 2018"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+Introductory Matter
+---------------
+
+Merging review
+```{r}
+# Parens make it run and display all in one step
+(dat1 <- data.frame(Year = 2000:2010, temp = c(rnorm(10), 0)))
+(dat2 <- data.frame(Year = 1999:2006, CO2 = c(rnorm(7), 0)))
+
+# Only overlapping data
+merge(dat1, dat2)
+
+# Merge all data
+merge(dat1, dat2, all.x = TRUE)
+
+# Different? -- Includes 1999
+merge(dat1, dat2, all.x = TRUE, all.y = TRUE)
+
+# By x -- sorting by x on the second column. Looking for common values
+merge(dat1, dat2, by.x = 1, by.y = 1)
+```
+
+Linear Regression
+```{r}
+# Create some normal data
+x <- rnorm(100)
+y <- 2 * x + 3 + rnorm(length(x))
+plot(x,y)
+
+# Create a linear model
+mylm <- lm(y ~ x)
+```
+Conclusion: Data looks linear
+
+Test for normality of residuals 
+```{r}
+# Shapiro-Wilks test of residuals
+shapiro.test(mylm$residuals)
+
+# Visualize assumption plots
+par(mfrow = c(2, 2))
+plot(mylm)
+
+# Plot QQ Plots
+par(mfrow = c(1, 1))
+qqnorm(mylm$residuals)
+qqline(mylm$residuals)
+```
+Conclusion: Normal samples
+
+Use autocorrelation function to test for independence in residuals
+```{r}
+acf(mylm$residuals)
+```
+
+Conclusion: Independent samples
+
+Sumarize the model
+```{r}
+mysum <- summary(mylm)
+mysum
+```
+
+Conclusion: LM fits the data well
+
+### Data 2: Non-normal data
+
+Linear Regression
+```{r}
+# Create some normal data
+x <- rnorm(100)
+y <- exp(2*x) + 3 + rnorm(100)
+plot(x,y)
+
+# Create a linear model
+mylm <- lm(y ~ x)
+```
+Conclusion: Data looks exponential
+
+Test for normality of residuals 
+```{r}
+# Shapiro-Wilks test of residuals
+shapiro.test(mylm$residuals)
+
+# Visualize assumption plots
+par(mfrow = c(2, 2))
+plot(mylm)
+
+# Plot QQ Plots
+par(mfrow = c(1, 1))
+qqnorm(mylm$residuals)
+qqline(mylm$residuals)
+```
+Conclusion: Samples are not normal
+
+Use autocorrelation function to test for independence in residuals
+```{r}
+acf(mylm$residuals)
+```
+
+Conclusion: Independent samples
+
+Sumarize the model
+```{r}
+mysum <- summary(mylm)
+mysum
+```
+Conclusion: Linear model has a relatively poor fit
+
+### Data 3: Autocorrelated data
+
+Linear Regression
+```{r}
+# Create some normal data
+x <- rnorm(100)
+y <- 2*diffinv(x[1:99]) + 3 + rnorm(100)
+plot(x,y)
+
+# Create a linear model
+mylm <- lm(y ~ x)
+```
+Conclusion: Data looks scattered
+
+Test for normality of residuals 
+```{r}
+# Shapiro-Wilks test of residuals
+shapiro.test(mylm$residuals)
+
+# Visualize assumption plots
+par(mfrow = c(2, 2))
+plot(mylm)
+
+# Plot QQ Plots
+par(mfrow = c(1, 1))
+qqnorm(mylm$residuals)
+qqline(mylm$residuals)
+```
+Conclusion: Samples are not normal
+
+Use autocorrelation function to test for independence in residuals
+```{r}
+acf(mylm$residuals)
+```
+
+Conclusion: Non-independent samples
+
+Sumarize the model
+```{r}
+mysum <- summary(mylm)
+mysum
+```
+Conclusion: Linear model fits very poorly
+
+### More introduction
+
+Back to original data
+
+```{r}
+# Create some normal data
+x <- rnorm(100)
+y <- 2 * x + 3 + rnorm(length(x))
+plot(x,y)
+
+# Create a linear model
+mylm <- lm(y ~ x)
+```
+
+Coefficients and confidence intervals
+```{r}
+coef(mylm)
+confint(mylm)
+```
+
+
+Extrapolate the linear model
+```{r}
+summary(x)
+newx <- data.frame(x = -5:5)
+(my.predict <- predict(mylm, newdata = newx, interval = "conf"))
+
+# Plot prediction with confidence intervals
+plot(x, y, xlim = c(-5, 5))
+points(newx$x, my.predict[, "fit"], type = "l", col = "red")
+points(newx$x, my.predict[, "upr"], type = "l", lty = 2, col = "pink")
+points(newx$x, my.predict[, "lwr"], type = "l", lty = 2, col = "pink")
+
+```
+
+Correlation of multiple variables at once
+```{r}
+z <- rnorm(100)
+mycor <- data.frame(x, y, z)
+
+# Pearson's correlation
+cor(mycor)
+
+# Plot relationships among all columns
+pairs(mycor)
+```
+
+Multiple regression time!
+```{r}
+summary(lm(y ~ x + z, data = mycor))
+```
+
+Z is not linear, and therefore it does not add much to the linear regression. That is shown in the table above, where the Pr(>|t|) of z > 0.05.
+
+
+Task 1
+--------
+
+```{r}
+co2 <- read.table("http://faraway.neu.edu/data/lab7_co2.txt", header = TRUE)
+temp <- read.csv("http://faraway.neu.edu/data/lab7_temp.csv")
+pop <- read.csv("http://faraway.neu.edu/data/lab7_population.csv")
+```
+
+### Exercise 1
+
+```{r}
+# What is in our datasets?
+str(co2)
+str(temp)
+str(pop)
+
+# What do our datasets look like?
+head(co2)
+head(temp)
+head(pop)
+
+# What range of years do our datasets cover?
+range(co2$year)
+range(temp$Year)
+range(pop$year)
+```
+
+
+### Exercise 2
+
+Reshape the dataset to long
+```{r}
+temp.long <- reshape(temp, varying = list(2:13), idvar = "Year", direction = "long")
+colnames(temp.long) <- c("year", "month", "temp")
+```
+
+### Exercise 3
+
+```{r}
+co2Agg <- aggregate(co2$ppm, FUN = mean, by = list(co2$year))
+colnames(co2Agg) <- c("Year", "Emissions (ppm)")
+
+tempAgg <- aggregate(temp.long$temp, FUN = mean, by = list(temp.long$year))
+colnames(tempAgg) <- c("Year", "Temperature (C)")
+
+popAgg <- aggregate(pop$popsize, FUN = mean, by = list(pop$year))
+colnames(popAgg) <- c("Year", "Population Size")
+
+head(co2Agg)
+head(tempAgg)
+head(popAgg)
+```
+
+### Exercise 4
+Merge the datasets
+
+```{r}
+merge <- merge(merge(tempAgg, co2Agg, all.x = TRUE, all.y = TRUE), popAgg, all.x = TRUE, all.y = TRUE)
+```
+
+
+Task 2
+-------------
+
+### Exercise 1
+
+$H_{0t}$: There is no linear relationship between year and temperature
+
+$H_{0e}$: There is no linear relationship between year and emissions
+
+$H_{0p}$: There is no linear relationship between year and population
+
+$H_{at}$: There is a linear relationship between year and tempearture
+
+$H_{ae}$: There is a linear relationship between year and emissions
+
+$H_{ap}$: There is a linear relationship between year and population
+
+### Exercise 2
+```{r}
+par(mfrow = c(3,1))
+plot(`Emissions (ppm)` ~ Year, data = co2Agg, main = "CO2 by Year")
+plot(`Temperature (C)` ~ Year, data = tempAgg, main = "Temperature by Year")
+plot(`Population Size` ~ Year, data = popAgg, main = "Population by Year")
+
+```
+
+Population looks nearly perfectly linear. Temperature looks approximately linear and CO2 seems not-quite-linear.
+
+### Exercise 3
+Create some linear models
+```{r}
+lmEmission <- lm(`Emissions (ppm)` ~ Year, data = co2Agg)
+lmTemp <- lm(`Temperature (C)` ~ Year, data = tempAgg)
+lmPop <- lm(`Population Size` ~ Year, data = popAgg)
+```
+
+
+### Exercise 4
+
+We really should check some assumptions, since that would be nice.
+
+1) Check Linearity
+We checked linearity by-eye in exercise 2
+
+2) Check Normality
+```{r}
+par(mfrow = c(3,1))
+qqnorm(lmEmission$residuals, main = "Emissions")
+qqline(lmEmission$residuals)
+qqnorm(lmTemp$residuals, main = "Temperature")
+qqline(lmTemp$residuals)
+qqnorm(lmPop$residuals, main = "Population")
+qqline(lmPop$residuals)
+
+# Formal test
+shapiro.test(lmEmission$residuals)
+shapiro.test(lmTemp$residuals)
+shapiro.test(lmPop$residuals)
+```
+
+
+Temperature looks quite normal, but the others are very much not normal
+
+
+
+3) Check homoscedasicity
+```{r}
+# Visualize assumption plots
+par(mfrow = c(2, 2))
+plot(lmEmission)
+
+# Visualize assumption plots
+par(mfrow = c(2, 2))
+plot(lmTemp)
+
+# Visualize assumption plots
+par(mfrow = c(2, 2))
+```
+
+
+
+
+
+### Exercise 5
+
+Does a log transformation improve any of the non-linear data?
+```{r}
+logCo2Agg <- co2Agg
+logPopAgg <- popAgg
+logTempAgg <- tempAgg
+
+logCo2Agg$`Emissions (ppm)` <- log(logCo2Agg$`Emissions (ppm)`)
+logPopAgg$`Population Size` <- log(logPopAgg$`Population Size`)
+logTempAgg$`Temperature (C)` <- log(logTempAgg$`Temperature (C)`)
+```
+
+
+Refit the models
+```{r}
+lmLogEmission <- lm(`Emissions (ppm)` ~ Year, data = logCo2Agg)
+lmLogTemp <- lm(`Temperature (C)` ~ Year, data = logTempAgg)
+lmLogPop <- lm(`Population Size` ~ Year, data = logPopAgg)
+```
+
+
+2) Check Normality
+```{r}
+par(mfrow = c(3,1))
+qqnorm(lmLogEmission$residuals, main = "Emissions")
+qqline(lmLogEmission$residuals)
+qqnorm(lmLogTemp$residuals, main = "Temperature")
+qqline(lmLogTemp$residuals)
+qqnorm(lmLogPop$residuals, main = "Population")
+qqline(lmLogPop$residuals)
+
+# Formal test
+shapiro.test(lmLogEmission$residuals)
+shapiro.test(lmLogTemp$residuals)
+shapiro.test(lmLogPop$residuals)
+
+```
+Temperature looks quite normal, but the others are very much not normal
+
+
+
+3) Check homoscedasicity
+```{r}
+# Visualize assumption plots
+par(mfrow = c(2, 2))
+plot(lmLogEmission)
+
+# Visualize assumption plots
+par(mfrow = c(2, 2))
+plot(lmLogTemp)
+
+# Visualize assumption plots
+par(mfrow = c(2, 2))
+plot(lmLogPop)
+```
+
+Log transformation doesn't really help much
+
+### Exercise 7
+Raw is just about as normally distributed as log transformed data. Only temperature is normally distributed in both cases.
+
+### Exercise 8
+When we extrapolate, we assume that the trends that we have seen so far will continue. This is an unfounded assumption. A counterexample of this assumption would be if we created a linear model for temperature from November-February. In Boston, this model would show that temperature decreases from November-February. If we extrapolated this model into June, we would errenously expect June to be quite cold. 
+
+### Exercise 9 and 10
+
+
+```{r fig2, fig.height = 10, fig.width = 7, fig.align = "center"}
+newYear <- data.frame(Year = 1880:2050)
+TempPredict <- predict(lmTemp, newdata = newYear, interval = "conf")
+EmissionPredict <- predict(lmEmission, newdata = newYear, interval = "conf")
+PopPredict <- predict(lmPop, newdata = newYear, interval = "conf")
+
+
+# Plot prediction with confidence intervals
+par(mfrow = c(3, 1))
+
+## Emission
+plot(co2Agg$Year, co2Agg$`Emissions (ppm)`, xlim = c(1880, 2050), ylim = c(0, 600))
+points(newYear$Year, EmissionPredict[, "fit"], type = "l", lwd = 2, col = "red")
+points(newYear$Year, EmissionPredict[, "upr"], type = "l", lty = 2, col = "red")
+points(newYear$Year, EmissionPredict[, "lwr"], type = "l", lty = 2, col = "red")
+
+## Temperature
+plot(tempAgg$Year, tempAgg$`Temperature (C)`, xlim = c(1880, 2050), ylim = c(13, 15))
+points(newYear$Year, TempPredict[, "fit"], type = "l", lwd = 2, col = "red")
+points(newYear$Year, TempPredict[, "upr"], type = "l", lty = 2, col = "red")
+points(newYear$Year, TempPredict[, "lwr"], type = "l", lty = 2, col = "red")
+
+## Population
+plot(popAgg$Year, popAgg$`Population Size`, xlim = c(1880, 2050), ylim = c(0, 10E9))
+points(newYear$Year, PopPredict[, "fit"], type = "l", lwd = 2, col = "red")
+points(newYear$Year, PopPredict[, "upr"], type = "l", lty = 2, col = "red")
+points(newYear$Year, PopPredict[, "lwr"], type = "l", lty = 2, col = "red")
+
+```
+
+### Exercise 11
+
+The linear model is poorly fit for emissions and population.
+
+However, if I had to make a prediction for each:
+
+```{r}
+# Emissions:
+tail(EmissionPredict, 1)
+```
+CO2 Emissions are predicted to be $(433.99, 524.28)$.
+
+```{r}
+# Temperature
+tail(TempPredict, 1)
+```
+Temperature is predicted to be $(14.61, 14.75)$.
+
+```{r}
+# Population Size
+tail(PopPredict, 1)
+```
+
+Population is predicted to be $(9.79E9, 9.98E9)$.
+
+Task 3
+------------
+
+### Exercise 1
+
+```{r}
+mergeComplete <- na.omit(merge)
+cor(mergeComplete)
+pairs(mergeComplete)
+```
+
+### Exercise 2
+This multiple regression could be misleading, since we do not have a robust reason for combining the factors in the way that we are doing. 
+
+### Exercise 3
+
+Multiple regression time!
+```{r}
+summary(lm(mergeComplete$`Temperature (C)` ~ mergeComplete$Year + mergeComplete$`Emissions (ppm)` + mergeComplete$`Population Size`, data = mergeComplete))
+```
+
+
+### Exercise 4
+No, correlation does not equal causation and we do not have a rigorous reason for combining these factors into a model. 

@@ -1,0 +1,360 @@
+---
+title: "Lab #7"
+author: "Julian Stanley"
+date: "6 April 2018"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+Introductory Matter
+---------------
+
+Ancova: numerical response, two explanatory: categorical and continuous
+
+```{r}
+x <- rnorm(100)
+slopeA <- 2
+interceptA <- 0
+slopeB <- -1
+interceptB <- 0
+
+# Create a response variable as a function of treatment A
+yA <- slopeA * x + interceptA + rnorm(100)
+
+# Create a response variable as a function of treatment B
+yB <- slopeB * x * interceptB + rnorm(100)
+
+# Create a datafram with our yA and yB
+myDat <- data.frame(y = c(yA, yB), x = c(x, x), trt = rep(c("A", "B"), 
+                                                          each = length(x)))
+
+str(myDat)
+
+# Visualize data
+plot(x, yA, col = "red")
+points(x, yB, col = "blue")
+abline(lm(yA ~ x), col = "red")
+abline(lm(yB ~ x), col = "blue")
+
+# Make a linear model object with interaction
+mod <- lm(y ~ x * trt, data = myDat)
+
+shapiro.test(mod$residuals)
+qqnorm(mod$residuals)
+qqline(mod$residuals, col = "red")
+
+anova(mod)
+
+
+```
+
+
+### Challenge 1
+
+```{r}
+x <- rnorm(100)
+slopeA <- 0
+interceptA <- 0
+slopeB <- 0
+interceptB <- 0
+
+# Create a response variable as a function of treatment A
+yA <- slopeA * x + interceptA + rnorm(100)
+
+# Create a response variable as a function of treatment B
+yB <- slopeB * x * interceptB + rnorm(100)
+
+# Create a datafram with our yA and yB
+myDat <- data.frame(y = c(yA, yB), x = c(x, x), trt = rep(c("A", "B"), 
+                                                          each = length(x)))
+
+str(myDat)
+
+# Visualize data
+plot(x, yA, col = "red")
+points(x, yB, col = "blue")
+abline(lm(yA ~ x), col = "red")
+abline(lm(yB ~ x), col = "blue")
+
+# Make a linear model object with interaction
+mod <- lm(y ~ x * trt, data = myDat)
+
+shapiro.test(mod$residuals)
+qqnorm(mod$residuals)
+qqline(mod$residuals, col = "red")
+
+anova(mod)
+
+
+```
+
+### Challenge 2
+
+```{r}
+x <- rnorm(100)
+slopeA <- 0
+interceptA <- 0
+slopeB <- 0
+interceptB <- 2
+
+# Create a response variable as a function of treatment A
+yA <- slopeA * x + interceptA + rnorm(100)
+
+# Create a response variable as a function of treatment B
+yB <- slopeB * x * interceptB + rnorm(100)
+
+# Create a datafram with our yA and yB
+myDat <- data.frame(y = c(yA, yB), x = c(x, x), trt = rep(c("A", "B"), 
+                                                          each = length(x)))
+
+str(myDat)
+
+# Visualize data
+plot(x, yA, col = "red")
+points(x, yB, col = "blue")
+abline(lm(yA ~ x), col = "red")
+abline(lm(yB ~ x), col = "blue")
+
+# Make a linear model object with interaction
+mod <- lm(y ~ x * trt, data = myDat)
+
+shapiro.test(mod$residuals)
+qqnorm(mod$residuals)
+qqline(mod$residuals, col = "red")
+
+anova(mod)
+
+
+```
+
+### Challenge 3
+
+```{r}
+x <- rnorm(100)
+slopeA <- 2
+interceptA <- 0
+slopeB <- 2
+interceptB <- 0
+
+
+# Create a response variable as a function of treatment A
+yA <- slopeA * x + interceptA + rnorm(100)
+
+# Create a response variable as a function of treatment B
+yB <- slopeB * x * interceptB + rnorm(100)
+
+# Create a datafram with our yA and yB
+myDat <- data.frame(y = c(yA, yB), x = c(x, x), trt = rep(c("A", "B"), 
+                                                          each = length(x)))
+
+str(myDat)
+
+# Visualize data
+plot(x, yA, col = "red")
+points(x, yB, col = "blue")
+abline(lm(yA ~ x), col = "red")
+abline(lm(yB ~ x), col = "blue")
+
+# Make a linear model object with interaction
+mod <- lm(y ~ x * trt, data = myDat)
+
+shapiro.test(mod$residuals)
+qqnorm(mod$residuals)
+qqline(mod$residuals, col = "red")
+
+anova(mod)
+
+
+```
+
+
+### Challenge 4
+
+```{r}
+x <- rnorm(100)
+slopeA <- 2
+interceptA <- 4
+slopeB <- 2
+interceptB <- 0
+
+
+# Create a response variable as a function of treatment A
+yA <- slopeA * x + interceptA + rnorm(100)
+
+# Create a response variable as a function of treatment B
+yB <- slopeB * x * interceptB + rnorm(100)
+
+# Create a datafram with our yA and yB
+myDat <- data.frame(y = c(yA, yB), x = c(x, x), trt = rep(c("A", "B"), 
+                                                          each = length(x)))
+
+str(myDat)
+
+# Visualize data
+plot(x, yA, col = "red")
+points(x, yB, col = "blue")
+abline(lm(yA ~ x), col = "red")
+abline(lm(yB ~ x), col = "blue")
+
+# Make a linear model object with interaction
+mod <- lm(y ~ x * trt, data = myDat)
+
+shapiro.test(mod$residuals)
+qqnorm(mod$residuals)
+qqline(mod$residuals, col = "red")
+
+anova(mod)
+
+
+```
+
+Main Assignment Task 1
+----------------
+
+### Part 1
+
+```{r}
+# Download data
+d1 <- read.csv("http://faraway.neu.edu/data/lab6_dataset1.csv")
+
+str(d1)
+head(d1)
+```
+Data has two categorical treatments: d2 treatment or d1 treatment, and one numerical response variable: score
+
+### Part 2
+
+```{r}
+# Visualize distribution
+par(mfrow = c(2,2))
+hist(d1$score, main = "Raw Data")
+hist(log(d1$score), main = "Log Transformed Data")
+
+qqnorm(d1$score, main = "QQ Raw Data")
+qqline(d1$score)
+qqnorm(log(d1$score), main = "QQ Log Transformed")
+qqline(log(d1$score))
+
+shapiro.test(d1$score)
+shapiro.test(log(d1$score))
+```
+Data is greatly improved by a log transformation of the numerical response variable.
+
+### Part 3
+
+
+```{r}
+interactionModel <- aov(log(d1$score) ~ drug1 * drug2, data = d1)
+summary(interactionModel)
+```
+
+### Part 4
+
+We conclude that the interaction is significant (p < 0.01).
+
+### Part 5
+
+```{r}
+tukeyModel <- TukeyHSD(interactionModel)
+par(mar = c(3,11,3,1))
+plot(TukeyHSD(interactionModel), las = 1)
+```
+
+
+### Part 6
+
+There is a significant difference between the treatment and control of drug 2
+
+### Part 7
+```{r}
+se <- function(x) sqrt(var(x)/length(x))
+
+print("Means:")
+(means <- tapply(d1$score, list(d1$drug1, d1$drug2), FUN = mean))
+print("Standard Errors:")
+(ses <- tapply(d1$score, list(d1$drug1, d1$drug2), FUN = se))
+
+require(multcompView)
+(labels <- multcompLetters(tukeyModel$`drug1:drug2`[, "p adj"])$Letters)
+labels <- labels[c("d1.ctrl:d2.ctrl", "d1.trt:d2.ctrl", "d1.ctrl:d2.trt", "d1.trt:d2.trt")]
+
+bar <- barplot(means, beside = TRUE, legend.text = c("D1 Control", "D1 Treatment"), names = c("D2 Control", "D2 Treatment"), ylab = "Score", col = c("aquamarine3", "coral3"), ylim = c(0, 1200))
+
+arrows(x0 = bar, y0 = c(means[1] - 2*ses[1], means[2] - 2*ses[2], means[3] - 2*ses[3], means[4] - 2*ses[4]) , x1 = bar, y1 = c(means[1] + 2*ses[1], means[2] + 2*ses[2], means[3] + 2*ses[3], means[4] + 2*ses[4]), angle = 90, code = 3)
+
+text(x = bar, y = c(means[1] + 2*ses[1], means[2] + 2*ses[2], means[3] + 2*ses[3], means[4] + 2*ses[4]), labels, pos = 3)
+```
+
+### Part 8
+
+```{r}
+interaction.plot(d1$drug1, d1$drug2, response = d1$score)
+``` 
+
+
+### Part 9
+
+The cocktail of both drug1 and drug2 is more effective than either drug by itself
+
+Task 2
+----------------
+
+```{r}
+d2 <- read.csv("http://faraway.neu.edu/data/lab6_dataset2.csv")
+
+str(d2)
+head(d2)
+```
+
+### Part 1
+
+```{r}
+hist(log(d2$score))
+model2 <- aov(log(d2$score) ~ drug1 + drug2 + sex + drug1*drug2 + drug2*sex + drug1*drug2*sex, data = d2)
+summary(model2)
+```
+Data is log-normal. Drug 1 has no effect, there is no interaction between drug 1 and sex. There is an effect of drug 2 and of sex, and an interaction between drug2 and sex, drug1 and drug2, and all three variables.
+
+### Part 2
+
+```{r}
+par(mfrow = c(2,1))
+interaction.plot(d2$drug1, d2$sex, response = d2$score)
+interaction.plot(d2$drug2, d2$sex, response = d2$score)
+```
+
+### Part 3
+
+Female and drug 1 treatment are antagonistic, female and drug 1 are synergistic.
+
+### Part 4
+
+```{r}
+d2mean <- aggregate(score ~ drug1 + drug2 + sex, FUN = mean, data = d2)
+d2se <- aggregate(score ~ drug1 + drug2 + sex, FUN = se, data = d2)
+
+tukeyModel2 <- TukeyHSD(model2)
+
+bar2 <- barplot(cbind(d2mean[1:4,4], cbind(d2mean[5:8, 4])), beside = TRUE, legend.text = c("Drug 1 Control + Drug 2 Control", "Drug 1 Treatment + Drug 2 Control", "Drug 1 Control + Drug 2 Treatment", "Drug 1 Treatment + Drug 2 Treatment"), args.legend = list(x = "topleft"), names = c("Female", "Male"), ylim = c(0, 2000))
+
+arrows(x0 = bar2, y0 = d2mean$score - 2*d2se$score , x1 = bar2, y1 = d2mean$score + 2*d2se$score, angle = 90, code = 3)
+
+require(multcompView)
+(labels <- multcompLetters(tukeyModel2$`drug1:drug2:sex`[, "p adj"])$Letters)
+labels <- labels[c("d1.ctrl:d2.ctrl:female", "d1.trt:d2.ctrl:female", "d1.ctrl:d2.trt:female", "d1.trt:d2.trt:female", "d1.ctrl:d2.ctrl:male", "d1.trt:d2.ctrl:male", "d1.ctrl:d2.trt:male", "d1.trt:d2.trt:male")]
+text(x = bar2, y = d2mean$score + 2*d2se$score, labels, pos = 3)
+
+```
+
+### Task 5
+
+There is no significant difference between treatment and no treatment in females.
+
+In males, a combination therapy is the most effective treatment. 
+
